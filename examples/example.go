@@ -43,7 +43,7 @@ func NewApp(ctx context.Context, addr string) *App {
 	}
 }
 
-func (a *App) Run(ctx context.Context) error {
+func (a *App) Run(_ context.Context) error {
 	if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("listen and serve: %w", err)
 	}
