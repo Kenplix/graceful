@@ -43,25 +43,11 @@ func NewService(ctx context.Context, addr string) *Service {
 }
 
 func (s *Service) Run(ctx context.Context) error {
-	failure := make(chan error)
-	go func() {
-		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			failure <- fmt.Errorf("listen and serve: %w", err)
-		}
-	}()
-
-	log.Printf("listening on %s", s.Addr)
-
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case err := <-failure:
-			return err
-		case <-time.After(time.Second):
-			log.Printf("service at %s alive", s.Addr)
-		}
+	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		return fmt.Errorf("listen and serve: %w", err)
 	}
+
+	return nil
 }
 
 func main() {
@@ -87,7 +73,7 @@ func main() {
 		}
 	}(context.TODO())
 
-	if err := svc.Run(ctx); err != nil {
+	if err := graceful.Run(ctx, svc); err != nil {
 		log.Printf("exit reason: %s", err)
 	}
 }

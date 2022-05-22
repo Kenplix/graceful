@@ -8,6 +8,24 @@ import (
 	"sync"
 )
 
+type Runner interface {
+	Run(ctx context.Context) error
+}
+
+func Run(ctx context.Context, r Runner) error {
+	failure := make(chan error)
+	go func() { failure <- r.Run(ctx) }()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case err := <-failure:
+			return err
+		}
+	}
+}
+
 type Container struct {
 	breakers []breaker
 	mu       sync.Mutex
