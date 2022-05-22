@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"graceful"
 	"log"
@@ -71,6 +72,14 @@ func main() {
 
 	var ctr graceful.Container
 	ctr.Add("service", svc.Shutdown)
+
+	ctr.Add("first failing closing", func(ctx context.Context) error {
+		return errors.New("oops error occurred")
+	})
+
+	ctr.Add("second failing closing", func(ctx context.Context) error {
+		return errors.New("uh-oh, another error occurred")
+	})
 
 	defer func(ctx context.Context) {
 		if err := ctr.Shutdown(ctx); err != nil {
