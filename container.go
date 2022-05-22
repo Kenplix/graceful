@@ -26,6 +26,14 @@ func Run(ctx context.Context, r Runner) error {
 	}
 }
 
+type Stoppable interface {
+	Container() *Container
+}
+
+func Shutdown(ctx context.Context, s Stoppable) error {
+	return s.Container().Shutdown(ctx)
+}
+
 type Container struct {
 	breakers []breaker
 	mu       sync.Mutex
